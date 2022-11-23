@@ -224,7 +224,24 @@
                                         $NewRow[$P.Value] = $sheet.Cells[$R, $P.Column].Text
                                     }
                                     elseif ($MatchTest.groups.name -eq "asdate" -and $sheet.Cells[$R, $P.Column].Value -is [System.ValueType]) {
-                                        $NewRow[$P.Value] = [datetime]::FromOADate(($sheet.Cells[$R, $P.Column].Value))
+                                        Try
+                                        {
+                                            $NewRow[$P.Value] = [datetime]::FromOADate(($sheet.Cells[$R, $P.Column].Value))
+                                        }
+                                        Catch
+                                        {
+                                            Try
+                                            {
+                                                $Delta = [DateTime]($Sheet.Cells[$R, $P.Column].Value) - [DateTime]"12/30/1899"
+                                                $NewRow[$P.Value] = [DateTime]::FromOADate([Double]($Delta.Days) + ([Double]($Delta.Seconds) / 86400))
+                                            }
+                                            Catch
+                                            {
+                                                $DeltaString = ([DateTime]($Sheet.Cells[$R, $P.Column].Value)).ToString("dd-MM-yyyy")
+                                                $Delta = [DateTime]($DeltaString) - [DateTime]"12/30/1899"
+                                                $NewRow[$P.Value] = [DateTime]::FromOADate([Double]($Delta.Days) + ([Double]($Delta.Seconds) / 86400))
+                                            }
+                                        }
                                     }
                                     else { $NewRow[$P.Value] = $sheet.Cells[$R, $P.Column].Value }
                                 }
